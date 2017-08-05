@@ -6,7 +6,7 @@ var promise = require('bluebird'),
     _ = require('lodash');
 /* Some styles are applied only with user interaction, and therefore its
  *   selectors cannot be used with querySelectorAll.
- * http://www.w3.org/TR/2001/CR-css3-selectors-20011113/
+ * https://www.w3.org/TR/2001/CR-css3-selectors-20011113/
  */
 var dePseudify = (function () {
     var ignoredPseudos = [

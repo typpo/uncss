@@ -10,12 +10,12 @@ chai.use(resemble);
 describe('Pages should resemble the reference', function () {
     it('Bootstrap', function (done) {
         expect('tests/output/bootstrap/jumbotron.html')
-            .to.resemble('http://getbootstrap.com/examples/jumbotron/', done);
+            .to.resemble('https://getbootstrap.com/examples/jumbotron/', done);
     });
 
     it('GitHub pages', function (done) {
         expect('tests/output/gh-pages/index.html')
-            .to.resemble('http://giakki.github.io/uncss/', done);
+            .to.resemble('https://giakki.github.io/uncss/', done);
     });
 
     it('Selectors', function (done) {
