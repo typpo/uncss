@@ -120,7 +120,7 @@ function readStylesheets(files, outputBanner) {
                 return contents;
             });
         }
-        throw new Error('UnCSS: could not open ' + path.join(process.cwd(), filename));
+        console.error('UnCSS: could not open ' + path.join(process.cwd(), filename));
     }).then(function (res) {
         // res is an array of the content of each file in files (in the same order)
         if (outputBanner) {
