@@ -131,7 +131,8 @@ function processWithTextApi(files, options, pages, stylesheets) {
      *     either of the above
      */
     if (!_.flatten(stylesheets).length) {
-        throw new Error('UnCSS: no stylesheets found');
+        console.warn('UnCSS: no stylesheets found');
+        //throw new Error('UnCSS: no stylesheets found');
     }
 
     /* OK, so we have some CSS to work with!
