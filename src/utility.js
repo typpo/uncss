@@ -128,7 +128,7 @@ function readStylesheets(files, outputBanner) {
             for (var i = 0, len = files.length; i < len; i++) {
                 // We append a small banner to keep track of which file we are currently processing
                 // super helpful for debugging
-                var banner = '/*!!! ___FILE_DELIMITER___ ' + files[i].replace(/\\/g, '/') + ' !!!*/\n';
+                var banner = '___FILE_DELIMITER___' + files[i].replace(/\\/g, '/') + '___NAME_DELIMITER___\n';
                 res[i] = banner + res[i];
             }
         }
