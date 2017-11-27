@@ -111,7 +111,7 @@ function readStylesheets(files, outputBanner) {
         if (isURL(filename)) {
             return request({
                 url: filename,
-                headers: { 'User-Agent': 'UnCSS' }
+                headers: { 'User-Agent': 'Lightsite Spooder' }
             }).spread(function (response, body) {
                 return body;
             });
