@@ -150,7 +150,11 @@ function processWithTextApi(files, options, pages, stylesheets) {
     } catch (err) {
         /* Try and construct a helpful error message */
         // throw utility.parseErrorMessage(err, cssStr);
-        return [cssStr, { success: false }];
+        return [cssStr, {
+          success: false,
+          original: cssStr,
+          selectors: '',
+        }];
     }
     return uncss(pages, pcss, options.ignore).spread(function (css, rep) {
         var newCssStr = '';
