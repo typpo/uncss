@@ -149,7 +149,8 @@ function processWithTextApi(files, options, pages, stylesheets) {
         pcss = postcss.parse(cssStr);
     } catch (err) {
         /* Try and construct a helpful error message */
-        throw utility.parseErrorMessage(err, cssStr);
+        // throw utility.parseErrorMessage(err, cssStr);
+        return [cssStr, { success: false }];
     }
     return uncss(pages, pcss, options.ignore).spread(function (css, rep) {
         var newCssStr = '';
@@ -159,6 +160,7 @@ function processWithTextApi(files, options, pages, stylesheets) {
 
         if (options.report) {
             report = {
+                success: true,
                 original: cssStr,
                 selectors: rep
             };
