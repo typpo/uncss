@@ -108,7 +108,7 @@ function parsePaths(source, stylesheets, options) {
  */
 function readStylesheets(files, outputBanner) {
     return promise.map(files, function (filename) {
-        if (isURL(filename)) {
+        if (isURL(filename) && !filename.startsWith('data:')) {
             return request({
                 url: filename,
                 headers: { 'User-Agent': 'Lightsite Spooder' }
