@@ -1,11 +1,10 @@
 'use strict';
 
-var glob = require('glob'),
+const glob = require('glob'),
     isHTML = require('is-html'),
     isURL = require('is-absolute-url'),
     jsdom = require('./jsdom.js'),
     postcss = require('postcss'),
-    Promise = require('bluebird'),
     uncss = require('./lib.js'),
     utility = require('./utility.js'),
     _ = require('lodash');
@@ -21,7 +20,7 @@ function getHTML(files, options) {
         files = [files];
     }
 
-    files = _.flatten(files.map(function (file) {
+    files = _.flatten(files.map((file) => {
         if (!isURL(file) && !isHTML(file)) {
             return glob.sync(file);
         }
@@ -34,9 +33,7 @@ function getHTML(files, options) {
 
     // Save files for later reference.
     options.files = files;
-    return files.map(function(file) {
-        return jsdom.fromSource(file, options);
-    });
+    return Promise.all(files.map((file) => jsdom.fromSource(file, options)));
 }
 
 /**
@@ -52,11 +49,8 @@ function getStylesheets(files, options, pages) {
         return Promise.resolve([files, options, pages, [options.stylesheets]]);
     }
     /* Extract the stylesheets from the HTML */
-    return Promise.map(pages, function (page) {
-        return jsdom.getStylesheets(page, options);
-    }).then(function (stylesheets) {
-        return [files, options, pages, stylesheets];
-    });
+    return Promise.all(pages.map((page) => jsdom.getStylesheets(page.window, options)))
+        .then((stylesheets) => [files, options, pages, stylesheets]);
 }
 
 /**
@@ -67,12 +61,13 @@ function getStylesheets(files, options, pages) {
  * @param  {Array}   stylesheets List of CSS files
  * @return {Array}
  */
-function getCSS(files, options, pages, stylesheets) {
+function getCSS([files, options, pages, stylesheets]) {
     /* Ignore specified stylesheets */
     if (options.ignoreSheets.length) {
-        stylesheets = stylesheets.map(function (arr) {
-            return arr.filter(function (sheet) {
-                return _.every(options.ignoreSheets, function (ignore) {
+        stylesheets = stylesheets
+        .map((arr) => {
+            return arr.filter((sheet) => {
+                return _.every(options.ignoreSheets, (ignore) => {
                     if (_.isRegExp(ignore)) {
                         return !ignore.test(sheet);
                     }
@@ -93,9 +88,7 @@ function getCSS(files, options, pages, stylesheets) {
          */
         stylesheets =
             _.chain(stylesheets)
-                .map(function (sheets, i) {
-                    return utility.parsePaths(files[i], sheets, options);
-                })
+                .map((sheets, i) => utility.parsePaths(files[i], sheets, options))
                 .flatten()
                 .uniq()
                 .value();
@@ -103,7 +96,7 @@ function getCSS(files, options, pages, stylesheets) {
         /* Reset the array if we didn't find any link tags */
         stylesheets = [];
     }
-    return [files, options, pages, utility.readStylesheets(stylesheets, options.banner)];
+    return Promise.all([options, pages, utility.readStylesheets(stylesheets, options.banner)]);
 }
 
 /**
@@ -114,7 +107,7 @@ function getCSS(files, options, pages, stylesheets) {
  * @param  {Array}   stylesheets List of CSS files
  * @return {Promise}
  */
-function processWithTextApi(files, options, pages, stylesheets) {
+function processWithTextApi([options, pages, stylesheets]) {
     /* If we specified a raw string of CSS, add it to the stylesheets array */
     if (options.raw) {
         if (_.isString(options.raw)) {
@@ -141,24 +134,19 @@ function processWithTextApi(files, options, pages, stylesheets) {
      * - Remove the unused rules
      * - Return the optimized CSS as a string
      */
-    var cssStr = stylesheets.join(' \n'),
-        pcss,
+    const cssStr = stylesheets.join(' \n');
+    let pcss,
         report;
 
     try {
         pcss = postcss.parse(cssStr);
     } catch (err) {
         /* Try and construct a helpful error message */
-        // throw utility.parseErrorMessage(err, cssStr);
-        return [cssStr, {
-          success: false,
-          original: cssStr,
-          selectors: '',
-        }];
+        //throw utility.parseErrorMessage(err, cssStr);
     }
-    return uncss(pages, pcss, options.ignore).spread(function (css, rep) {
-        var newCssStr = '';
-        postcss.stringify(css, function(result) {
+    return uncss(pages, pcss, options.ignore).then(([css, rep]) => {
+        let newCssStr = '';
+        postcss.stringify(css, (result) => {
             newCssStr += result;
         });
 
@@ -206,39 +194,51 @@ function init(files, options, callback) {
     }
 
     /* Assign default values to options, unless specified */
-    options = _.defaults(options, {
-        csspath: '',
-        ignore: [],
-        media: [],
-        timeout: 0,
-        report: false,
-        ignoreSheets: [],
-        html: files,
+    options = _.merge({
         banner: true,
-        // gulp-uncss parameters:
-        raw: null
-    });
+        csspath: '',
+        html: files,
+        htmlRoot: null,
+        ignore: [],
+        ignoreSheets: [],
+        inject: null,
+        jsdom: jsdom.defaultOptions(),
+        media: [],
+        raw: null,
+        report: false,
+        stylesheets: null,
+        timeout: 0,
+        uncssrc: null,
+        userAgent: 'uncss'
+    }, options);
 
-    process(options, callback);
+    process(options).then(([css, report]) => callback(null, css, report), callback);
 }
 
-function processAsPostCss(files, options, pages) {
+function processAsPostCss(options, pages) {
     return uncss(pages, options.rawPostCss, options.ignore);
 }
 
-function process(opts, callback) {
-    var resource = getHTML(opts.html, opts);
-    return Promise.using(resource, function(pages) {
-        if (opts.usePostCssInternal) {
-            return processAsPostCss(opts.files, opts, pages);
+function process(opts) {
+    return getHTML(opts.html, opts).then((pages) => {
+        function cleanup (result) {
+            pages.forEach((page) => page.window.close());
+            return result;
         }
+
+        if (opts.usePostCssInternal) {
+            return processAsPostCss(opts, pages)
+                .then(cleanup);
+        }
+
         return getStylesheets(opts.files, opts, pages)
-          .spread(getCSS)
-          .spread(processWithTextApi);
-    }).asCallback(callback, { spread: !opts.usePostCssInternal });
+            .then(getCSS)
+            .then(processWithTextApi)
+            .then(cleanup);
+    });
 }
 
-var postcssPlugin = postcss.plugin('uncss', function (opts) {
+const postcssPlugin = postcss.plugin('uncss', (opts) => {
     opts = _.defaults(opts, {
         usePostCssInternal: true,
         // Ignore stylesheets in the HTML files; only use those from the stream

@@ -1,25 +1,43 @@
 'use strict';
 
-var chai = require('chai'),
-    resemble = require('chai-resemble');
+const chai = require('chai'),
+    path = require('path');
 
-var expect = chai.expect;
+// Ignore resemble tests on node 6.
+if (process.version.match(/^v6/)) {
+    return;
+}
+
+const resemble = require('chai-resemble');
+
+const expect = chai.expect;
 
 chai.use(resemble);
 
-describe('Pages should resemble the reference', function () {
-    it('Bootstrap', function (done) {
-        expect('tests/output/bootstrap/jumbotron.html')
-            .to.resemble('http://getbootstrap.com/docs/3.3/examples/jumbotron/', done);
+function rel(relativePath) {
+    return path.resolve(__dirname, relativePath);
+}
+
+describe('Pages should resemble the reference', () => {
+    it('Bootstrap', (done) => {
+        expect('file://' + rel('output/bootstrap/jumbotron.html')).to.resemble(
+            'https://getbootstrap.com/docs/3.3/examples/jumbotron/',
+            {
+                name: 'bootstrap',
+                outDir: rel('screenshots')
+            },
+            done
+        );
     });
 
-    it('GitHub pages', function (done) {
-        expect('tests/output/gh-pages/index.html')
-            .to.resemble('http://giakki.github.io/uncss/', done);
-    });
-
-    it('Selectors', function (done) {
-        expect('tests/selectors/index.html')
-            .to.resemble('tests/output/selectors/index.html', done);
+    it('Selectors', (done) => {
+        expect('file://' + rel('selectors/index.html')).to.resemble(
+            'file://' + rel('output/selectors/index.html'),
+            {
+                name: 'selectors',
+                outDir: rel('screenshots')
+            },
+            done
+        );
     });
 });

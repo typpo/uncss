@@ -2,9 +2,9 @@
 <html lang="en">
     <head>
         <title>Red vs. Blue</title>
-        <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/colors/1.0/colors.min.css">
-        <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans:400">
-        <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.0.3/css/font-awesome.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/colors/1.0/colors.min.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.0.3/css/font-awesome.min.css">
         <link rel="stylesheet" href="fixtures/adjacent.css?v=123">
         <link rel="stylesheet" href="fixtures/classes.css">
         <link rel="stylesheet" href="fixtures/complex.css">
@@ -17,10 +17,12 @@
         <link rel="stylesheet" href="fixtures/nthchild.css">
         <link rel="stylesheet" href="fixtures/nthoftype.css">
         <link rel="stylesheet" href="fixtures/pseudo.css">
+        <link rel="stylesheet" href="fixtures/pseudo-class-with-pseudo-element.css">
         <link rel="stylesheet" href="fixtures/child.css">
         <link rel="stylesheet" href="fixtures/target.css">
         <link rel="stylesheet" href="fixtures/vendor.css">
         <link rel="stylesheet" href="fixtures/keyframes.css">
+        <link rel="stylesheet" href="fixtures/escaped-pseudo.css">
     </head>
     <body>
         <!--
@@ -46,10 +48,10 @@
             </section>
         </div>
         <h5 class="navy">Navy</h5>
-        <main class="slideRightAndFade">
+        <main hidden class="slideRightAndFade">
             Slidin'
         </main>
-        <aside class="flashBounce">
+        <aside hidden class="flashBounce">
             Your Attention, Please!
         </aside>
         <noscript>
@@ -57,5 +59,7 @@
                 YELLOW
             </h6>
         </noscript>
+
+        <section class="sm:hover:font-hairline"></section>
     </body>
 </html>
